@@ -18,7 +18,7 @@ const HamburgerButton: FC<{ onClick: () => void; isOpen: boolean }> = ({
   >
     <div className="relative w-8 h-6">
       <span
-        className={`absolute left-0 w-full h-0.5 bg-white transform transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] ${
+        className={`absolute left-0 w-full h-0.5 bg-white transform transition-all duration-500 ease-&lsqb;cubic-bezier(0.19,1,0.22,1)&rsqb; ${
           isOpen ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0"
         }`}
       />
@@ -28,7 +28,7 @@ const HamburgerButton: FC<{ onClick: () => void; isOpen: boolean }> = ({
         }`}
       />
       <span
-        className={`absolute left-0 w-full h-0.5 bg-white transform transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] ${
+        className={`absolute left-0 w-full h-0.5 bg-white transform transition-all duration-500 ease-&lsqb;cubic-bezier(0.19,1,0.22,1)&rsqb; ${
           isOpen ? "top-1/2 -translate-y-1/2 -rotate-45" : "bottom-0"
         }`}
       />
@@ -85,7 +85,7 @@ const FadeInItem: FC<FadeInItemProps> = ({
     <div
       ref={ref}
       style={{ transitionDelay: `${delay}ms` }}
-      className={`transform transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+      className={`transform transition-all duration-1000 ease-&lsqb;cubic-bezier(0.25,1,0.5,1)&rsqb; ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-16"
       } ${className}`}
     >
@@ -487,7 +487,7 @@ function App() {
 
       {/* Full Screen Menu */}
       <div
-        className={`fixed inset-0 bg-dark z-40 transform transition-transform duration-700 ease-[cubic-bezier(0.87,0,0.13,1)] ${menuOpen ? "translate-y-0" : "-translate-y-full"}`}
+        className={`fixed inset-0 bg-dark z-40 transform transition-transform duration-700 ease-&lsqb;cubic-bezier(0.87,0,0.13,1)&rsqb; ${menuOpen ? "translate-y-0" : "-translate-y-full"}`}
       >
         <div className="h-full w-full max-w-[1600px] mx-auto flex flex-col md:flex-row items-center justify-center md:justify-between px-8 md:px-24">
           <div
