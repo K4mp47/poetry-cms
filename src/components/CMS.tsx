@@ -5,7 +5,7 @@ import type { ContentItem, SiteSettings } from '@/types';
 interface CMSProps {
   items: ContentItem[];
   settings: SiteSettings;
-  isGitHubConfigured: boolean;
+  isFirebaseConfigured: boolean;
   onSaveItem: (item: ContentItem) => Promise<boolean>;
   onDeleteItem: (id: string) => Promise<boolean>;
   onSaveSettings: (settings: SiteSettings) => Promise<boolean>;
@@ -15,7 +15,7 @@ interface CMSProps {
 export default function CMS({ 
   items, 
   settings, 
-  isGitHubConfigured,
+  isFirebaseConfigured,
   onSaveItem, 
   onDeleteItem, 
   onSaveSettings,
@@ -90,9 +90,9 @@ export default function CMS({
       }, 1000);
     } else {
       setSaveStatus('error');
-      setErrorMessage(isGitHubConfigured 
-        ? 'Failed to save to GitHub. Check your token permissions.' 
-        : 'Saved locally. Configure GitHub to persist changes.'
+      setErrorMessage(isFirebaseConfigured 
+        ? 'Failed to save to Firebase. Check your configuration and rules.' 
+        : 'Saved locally. Configure Firebase to persist changes.'
       );
       setTimeout(() => setSaveStatus('idle'), 2000);
     }
@@ -109,8 +109,8 @@ export default function CMS({
       setTimeout(() => setSaveStatus('idle'), 1000);
     } else {
       setSaveStatus('error');
-      setErrorMessage(isGitHubConfigured 
-        ? 'Failed to save settings to GitHub.' 
+      setErrorMessage(isFirebaseConfigured 
+        ? 'Failed to save settings to Firebase.' 
         : 'Settings saved locally.'
       );
       setTimeout(() => setSaveStatus('idle'), 2000);
@@ -198,10 +198,10 @@ export default function CMS({
           </div>
         )}
 
-        {!isGitHubConfigured && (
+        {!isFirebaseConfigured && (
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 text-blue-800 text-sm">
             <strong>Local Mode:</strong> Changes are saved locally only. 
-            Configure GitHub environment variables to persist changes to the repository.
+            Configure Firebase environment variables to persist changes to the cloud.
           </div>
         )}
 
@@ -322,14 +322,14 @@ export default function CMS({
         </div>
       </header>
 
-      {/* GitHub Status */}
-      <div className={`mb-8 p-4 border ${isGitHubConfigured ? 'bg-green-50 border-green-200 text-green-800' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
+      {/* Firebase Status */}
+      <div className={`mb-8 p-4 border ${isFirebaseConfigured ? 'bg-green-50 border-green-200 text-green-800' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
         <div className="flex items-center space-x-3">
-          <div className={`w-2 h-2 rounded-full ${isGitHubConfigured ? 'bg-green-500' : 'bg-amber-500'}`}></div>
+          <div className={`w-2 h-2 rounded-full ${isFirebaseConfigured ? 'bg-green-500' : 'bg-amber-500'}`}></div>
           <span className="text-sm font-medium">
-            {isGitHubConfigured 
-              ? 'GitHub Integration: Active - Changes will be saved to repository' 
-              : 'Local Mode - Configure GitHub environment variables to enable cloud sync'}
+            {isFirebaseConfigured 
+              ? 'Firebase Integration: Active - Changes will be saved to cloud' 
+              : 'Local Mode - Configure Firebase environment variables to enable cloud sync'}
           </span>
         </div>
       </div>
@@ -499,7 +499,7 @@ export default function CMS({
             </label>
             <input
               type="text"
-              value={settingsForm.authorRoles.join(', ')}
+              value={Array.isArray(settingsForm.authorRoles) ? settingsForm.authorRoles.join(', ') : ''}
               onChange={(e) => setSettingsForm({ 
                 ...settingsForm, 
                 authorRoles: e.target.value.split(',').map(r => r.trim()).filter(Boolean)

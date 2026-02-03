@@ -1,79 +1,87 @@
-# Digital Silence - CMS con GitHub come Database
+# Digital Silence - CMS con Firebase come Database
 
-Un portfolio letterario con CMS integrato che utilizza **GitHub come database** per la persistenza dei contenuti.
+Un portfolio letterario con CMS integrato che utilizza **Firebase Firestore** come database per la persistenza dei contenuti.
 
 ## 🎯 Concetto
 
-Questo progetto implementa un'architettura "serverless" dove:
+Questo progetto implementa un'architettura moderna dove:
 - **Frontend**: React + TypeScript + Tailwind CSS + Vite
-- **Database**: File JSON nella repository GitHub (accessibili via GitHub API)
-- **Hosting**: Netlify (connesso alla repository GitHub)
+- **Database**: Firebase Firestore (NoSQL cloud database)
+- **Hosting**: Qualsiasi provider (Vercel, Netlify, Firebase Hosting, etc.)
 - **CMS**: Interfaccia di amministrazione integrata con autenticazione
 
-## 🚀 Deploy su Netlify
+## 🚀 Configurazione Firebase
 
-### 1. Crea una repository GitHub
+### 1. Crea un Progetto Firebase
 
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/TUO_USERNAME/digital-silence.git
-git push -u origin main
+1. Vai su [Firebase Console](https://console.firebase.google.com/)
+2. Clicca su "Aggiungi progetto" e segui i passaggi
+3. Nel pannello del progetto, clicca sull'icona Web (`</>`) per registrare l'app
+4. Copia le credenziali `firebaseConfig` che appariranno
+
+### 2. Configura Authentication
+
+1. Nel menu a sinistra, clicca su **Authentication**.
+2. Vai nella scheda **Sign-in method**.
+3. Clicca su **Add new provider** e seleziona **Anonymous**.
+4. Attiva lo switch e clicca su **Salva**.
+   *Questo è necessario perché l'app utilizza l'accesso anonimo per gestire i permessi di lettura/scrittura in modo sicuro.*
+
+### 3. Configura Firestore Database
+
+1. Nel menu a sinistra, clicca su **Firestore Database**.
+2. Clicca su **Crea database**.
+3. Scegli la posizione del server.
+4. Configura le **Regole di sicurezza** (tab Rules):
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Permetti a chiunque di leggere i contenuti
+    match /config/{document} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /content/{document} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
 ```
-
-### 2. Configura Netlify
-
-1. Vai su [netlify.com](https://netlify.com) e accedi
-2. Clicca "Add new site" → "Import an existing project"
-3. Seleziona GitHub e autorizza Netlify
-4. Scegli la repository del progetto
-5. Configura le impostazioni:
-   - **Build command**: `npm run build`
-   - **Publish directory**: `dist`
-6. Clicca "Deploy site"
+*Queste regole permettono a chiunque di visualizzare il sito, ma solo agli utenti "autenticati" (anche anonimamente tramite il CMS) di scrivere.*
 
 ### 3. Configura le Environment Variables
 
-Nel pannello di Netlify, vai su **Site settings** → **Environment variables** e aggiungi:
+Crea un file `.env.local` nella root del progetto o aggiungi queste variabili nel pannello del tuo provider di hosting:
 
-| Variable | Descrizione | Esempio |
-|----------|-------------|---------|
-| `VITE_GITHUB_TOKEN` | Token GitHub con permessi repo | `ghp_xxxxxxxxxxxx` |
-| `VITE_GITHUB_REPO` | Nome repository (owner/repo) | `username/digital-silence` |
-| `VITE_GITHUB_BRANCH` | Branch dove salvare i contenuti | `main` |
-| `VITE_CONTENT_PATH` | Percorso cartella contenuti | `content` |
-| `VITE_ADMIN_PASSWORD` | Password per accedere al CMS | `tua_password_sicura` |
-
-### 4. Crea un GitHub Token
-
-1. Vai su GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
-2. Clicca "Generate new token (classic)"
-3. Seleziona lo scope `repo` (full control of private repositories)
-4. Copia il token e incollalo in `VITE_GITHUB_TOKEN` su Netlify
+| Variable | Descrizione |
+|----------|-------------|
+| `VITE_FIREBASE_API_KEY` | La tua Firebase API Key |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Il tuo Firebase Auth Domain |
+| `VITE_FIREBASE_PROJECT_ID` | Il tuo Firebase Project ID |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Il tuo Firebase Storage Bucket |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Il tuo Firebase Messaging Sender ID |
+| `VITE_FIREBASE_APP_ID` | Il tuo Firebase App ID |
+| `VITE_ADMIN_PASSWORD` | Password per accedere al CMS |
 
 ## 📁 Struttura del Progetto
 
 ```
-├── content/                    # Database JSON (file di contenuto)
-│   ├── settings.json          # Impostazioni del sito
-│   ├── meta.json              # Ordine dei contenuti
-│   ├── story-*.json           # Storie
-│   ├── poem-*.json            # Poesie
-│   └── quote-*.json           # Citazioni
 ├── src/
 │   ├── components/
 │   │   ├── CMS.tsx            # Interfaccia CMS
 │   │   └── Login.tsx          # Login per CMS
 │   ├── hooks/
-│   │   ├── useGitHubDB.ts     # Hook per GitHub API
+│   │   ├── useFirebaseDB.ts   # Hook per Firebase Firestore
 │   │   └── useAuth.ts         # Hook per autenticazione
+│   ├── lib/
+│   │   └── firebase.ts        # Configurazione Firebase SDK
 │   ├── types/
 │   │   └── index.ts           # TypeScript types
 │   ├── App.tsx                # Componente principale
 │   └── index.css              # Stili
-├── dist/                       # Build output (deploy su Netlify)
 └── vite.config.ts             # Configurazione Vite
 ```
 
@@ -83,93 +91,25 @@ Nel pannello di Netlify, vai su **Site settings** → **Environment variables** 
 1. Accedi al CMS cliccando "CMS" nel menu
 2. Inserisci la password (default: `jacopo` o quella configurata in `VITE_ADMIN_PASSWORD`)
 3. Clicca "+ New Post"
-4. Compila il form:
-   - **Type**: Story, Poetry, o Quote
-   - **Title**: Titolo (non richiesto per Quote)
-   - **Date**: Data di pubblicazione
-   - **Excerpt**: Anteprima (non richiesto per Quote)
-   - **Body**: Contenuto completo
-5. Clicca "Save"
+4. Compila il form e clicca "Save"
 
-### Modificare Contenuti
-1. Nel CMS, trova il contenuto nella lista
-2. Clicca "Edit"
-3. Modifica i campi
-4. Clicca "Save"
+### Struttura Database (Firestore)
 
-### Cancellare Contenuti
-1. Nel CMS, trova il contenuto nella lista
-2. Clicca "Delete"
-3. Conferma l'eliminazione
-
-### Modificare Impostazioni
-1. Nel CMS, clicca sulla tab "Site Settings"
-2. Modifica:
-   - Site Title
-   - Site Description
-   - Author Name
-   - Author Bio
-   - Author Roles
-3. Clicca "Save Settings"
-
-## 🔄 Come funziona il Database GitHub
-
-### Lettura
-1. L'app carica i file JSON dalla cartella `content/`
-2. Se GitHub è configurato, usa l'API GitHub per leggere i file
-3. Altrimenti, legge i file statici dalla build
-
-### Scrittura
-1. Quando salvi un contenuto nel CMS:
-   - Se GitHub è configurato: chiama l'API GitHub per creare/aggiornare il file
-   - Se GitHub NON è configurato: salva solo in localStorage (modalità offline)
-2. Il file JSON viene codificato in base64 e inviato a GitHub
-3. GitHub crea un commit automatico nella repository
-
-### Struttura dei file JSON
-
-**settings.json:**
-```json
-{
-  "siteTitle": "Digital Silence",
-  "siteDescription": "A collection of stories...",
-  "authorName": "Jacopo",
-  "authorBio": "Obsessed with the silence...",
-  "authorRoles": ["Author", "Curator", "Dreamer"]
-}
-```
-
-**story/poem/quote-*.json:**
-```json
-{
-  "id": "1",
-  "type": "Story",
-  "title": "Titolo",
-  "excerpt": "Anteprima...",
-  "body": "Contenuto completo...",
-  "date": "Oct 24, 2023"
-}
-```
-
-**meta.json:**
-```json
-{
-  "contentOrder": ["1", "2", "3"]
-}
-```
+Il database è organizzato in:
+- **Collezione `content`**: Documenti per ogni storia, poesia o citazione. L'ID del documento è l'ID del contenuto.
+- **Collezione `config`**: 
+    - Documento `settings`: Contiene le impostazioni del sito.
+    - Documento `meta`: Contiene l'ordine dei contenuti (`contentOrder`).
 
 ## 🛡️ Sicurezza
 
-- **Autenticazione**: Password-based con lockout dopo 3 tentativi falliti
-- **GitHub Token**: Memorizzato solo come environment variable su Netlify
-- **Sessione**: Mantenuta in sessionStorage (si perde alla chiusura del browser)
+- **Autenticazione**: Password-based integrata nell'app.
+- **Firebase Security Rules**: È consigliato configurare Firestore per permettere la scrittura solo se autenticati (utilizzando Firebase Auth o controlli custom).
 
 ## 📝 Note
 
-- In **modalità locale** (senza GitHub configurato), i cambiamenti sono salvati solo nel browser
-- Per persistere i cambiamenti, configura le environment variables GitHub su Netlify
-- Ogni modifica nel CMS crea un commit nella repository GitHub
-- Il sito si ricarica automaticamente quando Netlify rileva i cambiamenti nella repository
+- In **modalità locale** (senza Firebase configurato), i cambiamenti sono salvati solo nel browser (localStorage).
+- Per persistere i cambiamenti nel cloud, assicurati che tutte le variabili `VITE_FIREBASE_*` siano correttamente configurate.
 
 ## 🎨 Personalizzazione
 
@@ -184,16 +124,3 @@ Modifica le variabili CSS in `src/index.css`:
   --color-muted: #6B6B6B;     /* Testo secondario */
 }
 ```
-
-### Cambiare il font
-Aggiungi il font in `index.html` e modifica in `src/index.css`:
-
-```css
-.font-serif {
-  font-family: 'Il Tuo Font', serif;
-}
-```
-
-## 📚 Credits
-
-Ispirato al video: [Host your Database for Free on Github Pages](https://youtu.be/cYP0k_shdWc)
